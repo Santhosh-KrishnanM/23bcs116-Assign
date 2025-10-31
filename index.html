@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Cows and Bulls Game</title>
+  <link href="F:\College\Sem5\WUID\bootstrap.css" rel="stylesheet">
+  <script src="F:\College\Sem5\WUID\jquery-3.7.1.min.js"></script>
+  <style>
+    body {
+      background: lightblue;
+      min-height: 100vh;
+      font-family: Times New Roman, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .game-container {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h1 {
+      font-weight: 700;
+      color: #333;
+    }
+
+    #status {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    #guess {
+      text-align: center;
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+    }
+
+    table {
+      margin-top: 20px;
+    }
+
+    th, td {
+      text-align: center;
+    }
+
+    .btn {
+      border-radius: 10px;
+    }
+
+    footer {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>Cows and Bulls Game</h1>
+    <p id="status" class="text-primary">Guess the 4-digit number(10 attempts max)</p>
+    <p><u><b>Rules:</b></u></p>
+    <ul>
+ 	<li>Bull - The number of digits that are correct and in the correct position</li>
+	<li>Cow - The no. of digits that are correct and in the correct position</li>
+    </ul>	 
+
+    <div class="input-group mb-3 mt-4">
+      <input type="text" id="guess" class="form-control" maxlength="4" placeholder="Enter 4-digit number" style = "border-radius : 10px">
+      <button id="submitGuess" class="btn btn-success">Guess</button>
+    </div>
+
+    <button id="newGame" class="btn btn-info mb-3">New Game</button>
+
+    <table class="table table-striped table-bordered" style = "border-radius = 2px">
+      <thead class="table-info">
+        <tr>
+          <th>Try</th>
+          <th>Guess</th>
+          <th>Bulls </th>
+          <th>Cows </th>
+        </tr>
+      </thead>
+      <tbody id="history"></tbody>
+    </table>
+  </div>
+  <script>
+    $(document).ready(function () {
+      let secret = "";
+      let attempt = 0;
+      const maxAttempts = 10;
+      let gameOver = false;
+
+      function generateSecret() {
+        const digits = [];
+        while (digits.length < 4) {
+          let d = Math.floor(Math.random() * 10);
+          if (!digits.includes(d)) digits.push(d);
+        }
+        return digits.join("");
+      }
+
+      function calculateBullsAndCows(secret, guess) {
+        let bulls = 0, cows = 0;
+        for (let i = 0; i < 4; i++) {
+          if (guess[i] === secret[i]) bulls++;
+          else if (secret.includes(guess[i])) cows++;
+        }
+        return { bulls, cows };
+      }
+      function resetGame() {
+        secret = generateSecret();
+        attempt = 0;
+        gameOver = false;
+        $("#history").empty();
+        $("#status")
+          .text("Guess the 4-digit number! (10 attempts max)")
+          .removeClass("text-success text-danger")
+          .addClass("text-primary");
+        $("#guess").val("").prop("disabled", false);
+        $("#submitGuess").prop("disabled", false);
+        console.log("Secret (for testing):", secret);
+      }
+      $("#submitGuess").click(function () {
+        if (gameOver) return;
+
+        const guess = $("#guess").val();
+        if (guess.length !== 4 || isNaN(guess)) {
+          alert("Please enter a valid 4-digit number!");
+          return;
+        }
+        attempt++;
+        const result = calculateBullsAndCows(secret, guess);
+        $("#history").append(`<tr><td>${attempt}</td><td>${guess}</td><td>${result.bulls}</td><td>${result.cows}</td></tr>`);
+
+        if (result.bulls === 4) {
+          $("#status")
+            .text(`You guessed it in ${attempt} attempts!`)
+            .removeClass("text-primary text-danger")
+            .addClass("text-success");
+          gameOver = true;
+          $("#guess, #submitGuess").prop("disabled", true);
+        } else if (attempt >= maxAttempts) {
+          $("#status")
+            .text(`Game Over! The secret was ${secret}.`)
+            .removeClass("text-primary text-success")
+            .addClass("text-danger");
+          gameOver = true;
+          $("#guess, #submitGuess").prop("disabled", true);
+        } else {
+          $("#status")
+            .text(`${result.bulls} Bulls  and ${result.cows} Cows  | Attempts left: ${maxAttempts - attempt}`)
+            .removeClass("text-primary text-success")
+            .addClass("text-danger");
+        }
+        $("#guess").val("").focus();
+      });
+      $("#newGame").click(resetGame);
+      resetGame();
+    });
+  </script>
+</body>
+</html>
